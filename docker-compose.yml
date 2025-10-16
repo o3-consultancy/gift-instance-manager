@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  gift-instance-manager:
+    build: .
+    container_name: gift-instance-manager
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-changeme}
+      - DOCKER_SOCKET_PATH=/var/run/docker.sock
+      - GIFT_TRACKER_IMAGE=gift-tracker:latest
+      - INSTANCE_PORT_START=3000
+      - INSTANCE_PORT_END=3999
+      - BACKEND_API_URL=https://o3-ttgifts.com/api/instances
+    volumes:
+      # Mount Docker socket to manage containers
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Persist database
+      - ./data:/app/data
+    networks:
+      - gift-network
+
+networks:
+  gift-network:
+    driver: bridge

@@ -1,0 +1,37 @@
+{
+  "name": "gift-instance-manager",
+  "version": "1.0.0",
+  "description": "Multi-instance deployment manager for TikTok Gift Tracker",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch server/index.js",
+    "start": "node server/index.js",
+    "build:frontend": "cd frontend && npm run build",
+    "dev:frontend": "cd frontend && npm run dev"
+  },
+  "keywords": [
+    "tiktok",
+    "gift-tracker",
+    "instance-manager",
+    "docker",
+    "deployment"
+  ],
+  "author": "O3 Consultancy LLC",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "dockerode": "^4.0.2",
+    "better-sqlite3": "^11.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "express-rate-limit": "^7.2.0",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
