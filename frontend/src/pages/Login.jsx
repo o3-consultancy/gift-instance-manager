@@ -84,10 +84,10 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
+        {/* <div className="mt-6 text-center text-sm text-gray-600">
           <p>Default credentials:</p>
           <p className="font-mono">admin / changeme</p>
-        </div>
+        </div> */}
       </div>
     </div>
   );
