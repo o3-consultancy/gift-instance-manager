@@ -85,7 +85,7 @@ export async function initializeDefaultUser() {
 
     if (!user) {
       // Create default admin user
-      const password = process.env.ADMIN_PASSWORD || 'changeme';
+      const password = process.env.ADMIN_PASSWORD || '7Qd7ELzDAx7bcTn';
       const passwordHash = await hashPassword(password);
 
       user = UserModel.create(username, passwordHash, 'admin');
