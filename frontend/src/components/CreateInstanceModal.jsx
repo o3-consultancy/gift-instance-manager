@@ -11,11 +11,14 @@ export default function CreateInstanceModal({ onClose, onSuccess }) {
     port: '',
     backend_api_url: 'https://o3-ttgifts.com/api/instances',
     dash_password: 'changeme',
-    debug_mode: false
+    debug_mode: false,
+    docker_image: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [suggestedPort, setSuggestedPort] = useState(null);
+  const [availableImages, setAvailableImages] = useState([]);
+  const [loadingImages, setLoadingImages] = useState(true);
 
   useEffect(() => {
     // Get next available port
@@ -27,6 +30,18 @@ export default function CreateInstanceModal({ onClose, onSuccess }) {
         }
       })
       .catch(err => console.error('Error getting port:', err));
+
+    // Get available Docker images
+    instancesAPI.getAvailableImages()
+      .then(response => {
+        if (response.success && response.data.length > 0) {
+          setAvailableImages(response.data);
+          // Set the first image as default
+          setFormData(prev => ({ ...prev, docker_image: response.data[0].tag }));
+        }
+      })
+      .catch(err => console.error('Error getting images:', err))
+      .finally(() => setLoadingImages(false));
   }, []);
 
   const handleSubmit = async (e) => {
@@ -163,6 +178,37 @@ export default function CreateInstanceModal({ onClose, onSuccess }) {
             <p className="text-xs text-gray-500 mt-1">
               TikTok username to track (without @)
             </p>
+          </div>
+
+          {/* Docker Image Selection */}
+          <div>
+            <label className="label">Docker Image *</label>
+            {loadingImages ? (
+              <div className="text-sm text-gray-500">Loading available images...</div>
+            ) : availableImages.length > 0 ? (
+              <>
+                <select
+                  name="docker_image"
+                  value={formData.docker_image}
+                  onChange={handleChange}
+                  className="input"
+                  required
+                >
+                  {availableImages.map((image) => (
+                    <option key={image.id} value={image.tag}>
+                      {image.tag}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select the Docker image for this instance (e.g., latest, professional, enterprise, or custom)
+                </p>
+              </>
+            ) : (
+              <div className="text-sm text-red-600">
+                No gift-tracker images found. Please build a Docker image first.
+              </div>
+            )}
           </div>
 
           {/* Port */}

@@ -60,7 +60,8 @@ export const instancesAPI = {
   getLogs: (id, tail = 100) => api.get(`/instances/${id}/logs`, { params: { tail } }),
   getStats: (id) => api.get(`/instances/${id}/stats`),
   startAll: () => api.post('/instances/bulk/start'),
-  stopAll: () => api.post('/instances/bulk/stop')
+  stopAll: () => api.post('/instances/bulk/stop'),
+  getAvailableImages: () => api.get('/instances/available-images')
 };
 
 // System API
