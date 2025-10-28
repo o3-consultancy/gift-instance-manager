@@ -25,6 +25,24 @@ router.get('/', async (req, res) => {
 });
 
 /**
+ * GET /api/instances/available-images
+ * Get all available Docker images for gift-tracker
+ * IMPORTANT: This must come BEFORE /:id route to avoid conflicts
+ */
+router.get('/available-images', async (req, res) => {
+  try {
+    const result = await InstanceService.getAvailableImages();
+    res.json(result);
+  } catch (error) {
+    console.error('Error getting available images:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+/**
  * GET /api/instances/:id
  * Get instance by ID
  */
@@ -248,23 +266,6 @@ router.post('/bulk/stop', async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error('Error stopping all instances:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error'
-    });
-  }
-});
-
-/**
- * GET /api/instances/available-images
- * Get all available Docker images for gift-tracker
- */
-router.get('/available-images', async (req, res) => {
-  try {
-    const result = await InstanceService.getAvailableImages();
-    res.json(result);
-  } catch (error) {
-    console.error('Error getting available images:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'
