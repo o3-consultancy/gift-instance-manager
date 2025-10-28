@@ -109,7 +109,8 @@ export const InstanceService = {
         port: parseInt(data.port),
         backend_api_url: data.backend_api_url || process.env.BACKEND_API_URL,
         dash_password: data.dash_password || 'changeme',
-        debug_mode: data.debug_mode ? 1 : 0
+        debug_mode: data.debug_mode ? 1 : 0,
+        docker_image: data.docker_image || null
       };
 
       // Create instance in database
@@ -469,6 +470,13 @@ export const InstanceService = {
         message: error.message
       };
     }
+  },
+
+  /**
+   * Get available Docker images for instances
+   */
+  async getAvailableImages() {
+    return await DockerService.listAvailableImages();
   }
 };
 

@@ -255,4 +255,21 @@ router.post('/bulk/stop', async (req, res) => {
   }
 });
 
+/**
+ * GET /api/instances/available-images
+ * Get all available Docker images for gift-tracker
+ */
+router.get('/available-images', async (req, res) => {
+  try {
+    const result = await InstanceService.getAvailableImages();
+    res.json(result);
+  } catch (error) {
+    console.error('Error getting available images:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
 export default router;

@@ -67,11 +67,52 @@ export const DockerService = {
   },
 
   /**
+   * List all available gift-tracker Docker images
+   */
+  async listAvailableImages() {
+    try {
+      const images = await getDocker().listImages();
+      const giftTrackerImages = [];
+
+      images.forEach(img => {
+        if (img.RepoTags) {
+          img.RepoTags.forEach(tag => {
+            if (tag.startsWith('gift-tracker')) {
+              giftTrackerImages.push({
+                tag: tag,
+                id: img.Id,
+                created: img.Created,
+                size: img.Size
+              });
+            }
+          });
+        }
+      });
+
+      // Sort by created date (newest first)
+      giftTrackerImages.sort((a, b) => b.created - a.created);
+
+      return {
+        success: true,
+        data: giftTrackerImages
+      };
+    } catch (error) {
+      console.error('Error listing images:', error);
+      return {
+        success: false,
+        message: error.message,
+        data: []
+      };
+    }
+  },
+
+  /**
    * Create and start a new container for an instance
    */
   async createContainer(instance) {
     try {
-      const imageName = process.env.GIFT_TRACKER_IMAGE || 'gift-tracker:latest';
+      // Use instance-specific image or fall back to default
+      const imageName = instance.docker_image || process.env.GIFT_TRACKER_IMAGE || 'gift-tracker:latest';
 
       // Check if image exists
       const exists = await this.imageExists(imageName);

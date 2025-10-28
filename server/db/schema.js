@@ -36,6 +36,7 @@ export function initializeDatabase() {
       backend_api_url TEXT,
       dash_password TEXT,
       debug_mode INTEGER DEFAULT 0,
+      docker_image TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       last_started_at DATETIME,
@@ -94,9 +95,9 @@ export const InstanceModel = {
   create(data) {
     const stmt = db.prepare(`
       INSERT INTO instances (name, api_key, account_id, tiktok_username, port,
-                            backend_api_url, dash_password, debug_mode)
+                            backend_api_url, dash_password, debug_mode, docker_image)
       VALUES (@name, @api_key, @account_id, @tiktok_username, @port,
-              @backend_api_url, @dash_password, @debug_mode)
+              @backend_api_url, @dash_password, @debug_mode, @docker_image)
     `);
     const result = stmt.run(data);
     return this.findById(result.lastInsertRowid);
