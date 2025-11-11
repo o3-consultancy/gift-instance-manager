@@ -1,5 +1,13 @@
 import { InstanceModel, InstanceLogModel } from '../db/schema.js';
 import { DockerService } from './docker.service.js';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const execAsync = promisify(exec);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const InstanceService = {
   /**
@@ -121,10 +129,16 @@ export const InstanceService = {
 
       console.log(`✅ Instance created: ${instance.name} (ID: ${instance.id})`);
 
+      // Setup nginx + SSL in the background (don't wait for it)
+      this.setupNginxSSL(instance.name, instance.port).catch(err => {
+        console.error(`⚠️  Nginx setup failed for ${instance.name}:`, err.message);
+        InstanceLogModel.add(instance.id, 'warning', 'Nginx setup failed', { error: err.message });
+      });
+
       return {
         success: true,
         data: instance,
-        message: 'Instance created successfully'
+        message: 'Instance created successfully. Nginx + SSL setup is running in the background.'
       };
     } catch (error) {
       console.error('Error creating instance:', error);
@@ -233,6 +247,11 @@ export const InstanceService = {
         await DockerService.deleteContainer(instance);
       }
 
+      // Remove nginx + SSL configuration in the background
+      this.removeNginxSSL(instance.name).catch(err => {
+        console.error(`⚠️  Nginx cleanup failed for ${instance.name}:`, err.message);
+      });
+
       // Delete from database
       InstanceModel.delete(id);
 
@@ -240,7 +259,7 @@ export const InstanceService = {
 
       return {
         success: true,
-        message: 'Instance deleted successfully'
+        message: 'Instance deleted successfully. Nginx cleanup is running in the background.'
       };
     } catch (error) {
       console.error('Error deleting instance:', error);
@@ -477,6 +496,58 @@ export const InstanceService = {
    */
   async getAvailableImages() {
     return await DockerService.listAvailableImages();
+  },
+
+  /**
+   * Setup nginx reverse proxy and SSL certificate for an instance
+   */
+  async setupNginxSSL(instanceName, port) {
+    try {
+      const scriptPath = path.join(__dirname, '../../scripts/setup-nginx-ssl.sh');
+
+      console.log(`🔧 Setting up nginx + SSL for ${instanceName} on port ${port}...`);
+
+      // Run the script with sudo
+      const { stdout, stderr } = await execAsync(
+        `sudo ${scriptPath} ${instanceName} ${port}`,
+        { timeout: 120000 } // 2 minute timeout
+      );
+
+      if (stdout) console.log(stdout);
+      if (stderr) console.error(stderr);
+
+      console.log(`✅ Nginx + SSL setup completed for ${instanceName}`);
+      return { success: true };
+    } catch (error) {
+      console.error(`❌ Nginx + SSL setup failed for ${instanceName}:`, error.message);
+      throw error;
+    }
+  },
+
+  /**
+   * Remove nginx configuration and SSL certificate for an instance
+   */
+  async removeNginxSSL(instanceName) {
+    try {
+      const scriptPath = path.join(__dirname, '../../scripts/remove-nginx-ssl.sh');
+
+      console.log(`🗑️  Removing nginx + SSL for ${instanceName}...`);
+
+      // Run the script with sudo
+      const { stdout, stderr } = await execAsync(
+        `sudo ${scriptPath} ${instanceName}`,
+        { timeout: 60000 } // 1 minute timeout
+      );
+
+      if (stdout) console.log(stdout);
+      if (stderr) console.error(stderr);
+
+      console.log(`✅ Nginx + SSL cleanup completed for ${instanceName}`);
+      return { success: true };
+    } catch (error) {
+      console.error(`❌ Nginx + SSL cleanup failed for ${instanceName}:`, error.message);
+      throw error;
+    }
   }
 };
 
