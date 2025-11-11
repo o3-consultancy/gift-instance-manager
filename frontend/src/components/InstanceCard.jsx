@@ -29,9 +29,17 @@ export default function InstanceCard({ instance, onStart, onStop, onDelete, onSh
           <span className="text-gray-600">Account ID:</span>
           <span className="font-mono text-xs">{instance.account_id}</span>
         </div>
+        {instance.docker_image && (
+          <div className="flex justify-between">
+            <span className="text-gray-600">Image:</span>
+            <span className="font-mono text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+              {instance.docker_image}
+            </span>
+          </div>
+        )}
         {isRunning && (
           <a
-            href={`http://localhost:${instance.port}`}
+            href={`https://${instance.name}.app.o3-ttgifts.com`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center space-x-2 text-primary-600 hover:text-primary-700 py-2 px-3 bg-primary-50 rounded-lg transition-colors"

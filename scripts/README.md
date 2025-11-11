@@ -2,6 +2,113 @@
 
 This directory contains utility scripts for maintaining and managing the Gift Instance Manager.
 
+## Table of Contents
+1. [cleanup-logs.sh](#cleanup-logssh) - Docker log cleanup automation
+2. [setup-nginx-ssl.sh](#setup-nginx-sslsh) - Nginx + SSL setup for instances
+3. [remove-nginx-ssl.sh](#remove-nginx-sslsh) - Remove nginx configuration and SSL
+4. [post-instance-create.sh](#post-instance-createsh) - Post-creation hook
+
+---
+
+## setup-nginx-ssl.sh
+
+Automatically sets up nginx reverse proxy and SSL certificate for a gift-tracker instance.
+
+### Features
+- Creates nginx server block with reverse proxy configuration
+- Validates nginx configuration before applying
+- Obtains and configures SSL certificate via Let's Encrypt (certbot)
+- Sets up proper security headers
+- Creates domain in format: `https://{instance-name}.app.o3-ttgifts.com`
+- Configures logging for each instance
+
+### Prerequisites
+
+```bash
+# Install nginx (if not already installed)
+sudo apt update
+sudo apt install nginx
+
+# Install certbot
+sudo apt install certbot python3-certbot-nginx
+
+# Ensure DNS is configured
+# Add an A record: *.app.o3-ttgifts.com -> Your server IP
+```
+
+### Usage
+
+```bash
+# Make executable
+chmod +x /home/o3shx_inc/gift-instance-manager/scripts/setup-nginx-ssl.sh
+
+# Run the script
+sudo /home/o3shx_inc/gift-instance-manager/scripts/setup-nginx-ssl.sh <instance-name> <port>
+
+# Example: Setup for instance "customer1" running on port 3001
+sudo /home/o3shx_inc/gift-instance-manager/scripts/setup-nginx-ssl.sh customer1 3001
+```
+
+This creates: `https://customer1.app.o3-ttgifts.com` -> `http://localhost:3001`
+
+### What It Does
+
+1. **Creates nginx server block** in `/etc/nginx/sites-available/`
+2. **Creates symbolic link** to `/etc/nginx/sites-enabled/`
+3. **Tests nginx configuration** for syntax errors
+4. **Reloads nginx** to apply changes
+5. **Checks DNS** configuration
+6. **Obtains SSL certificate** from Let's Encrypt
+7. **Configures HTTPS** with automatic HTTP->HTTPS redirect
+
+### Important Notes
+
+- **Requires sudo/root** - Must run with elevated privileges
+- **DNS must be configured** - The domain must resolve to your server before SSL works
+- **Email configuration** - Edit the `EMAIL` variable in the script for Let's Encrypt notifications
+- **Rate limits** - Let's Encrypt has rate limits (50 certs/week per domain)
+
+---
+
+## remove-nginx-ssl.sh
+
+Removes nginx configuration and SSL certificate for an instance.
+
+### Usage
+
+```bash
+# Remove configuration for an instance
+sudo /home/o3shx_inc/gift-instance-manager/scripts/remove-nginx-ssl.sh <instance-name>
+
+# Example
+sudo /home/o3shx_inc/gift-instance-manager/scripts/remove-nginx-ssl.sh customer1
+```
+
+### What It Does
+
+1. Removes symbolic link from `/etc/nginx/sites-enabled/`
+2. Removes nginx config file from `/etc/nginx/sites-available/`
+3. Tests and reloads nginx
+4. Removes SSL certificate via certbot
+5. Cleans up log files
+
+---
+
+## post-instance-create.sh
+
+Hook script that can be called automatically after instance creation.
+
+### Usage
+
+```bash
+# Called automatically by the Node.js application
+./post-instance-create.sh <instance-name> <port>
+```
+
+This script logs all output to `/var/log/gift-instance-nginx-setup.log`
+
+---
+
 ## cleanup-logs.sh
 
 Automatically clears Docker container logs for all running gift-tracker instances to prevent disk space issues.
